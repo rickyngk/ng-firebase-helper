@@ -31,41 +31,44 @@ angular.module('firebaseHelper', [])
         }
         return self.buildPath(p);
     }
+    var getRef = function(p) {
+        if (typeof(p) == "object" && p.onDisconnect) {
+            return p;
+        } else {
+            return self.getFireBaseInstance(getPath(p));
+        }
+    }
 
-    this.bindObject = function(path, $scope, key) {
-        path = getPath(path);
-        console.log("bindObject", path);
-        var syncObject = $firebaseObject(self.getFireBaseInstance(path));
+
+    this.bindObject = function(ref, $scope, key) {
+        ref = getRef(ref);
+        var syncObject = $firebaseObject(ref);
         syncObject.$bindTo($scope, key);
     }
 
-    this.syncObject = function(path) {
-        path = getPath(path);
-        console.log("syncObject", path);
-        return $firebaseObject(self.getFireBaseInstance(path));
+    this.syncObject = function(ref) {
+        ref = getRef(ref);
+        return $firebaseObject(ref);
     }
 
     this.syncProtectedObject = function(path) {
         path = getPath(path);
-        console.log("syncProtectedObject", path);
         return $firebaseObject(self.getFireBaseInstance(path + "/" + self.getUID()));
     }
 
-    this.syncArray = function(path) {
-        path = getPath(path);
-        console.log("syncArray", path);
-        return $firebaseArray(self.getFireBaseInstance(path));
+    this.syncArray = function(ref) {
+        ref = getRef(ref);
+        return $firebaseArray(ref);
     }
 
     this.syncProtectedArray = function(path) {
         path = getPath(path);
-        console.log("syncArray", path + "/" + self.getUID());
         return $firebaseArray(self.getFireBaseInstance(path + "/" + self.getUID()));
     }
 
-    this.transaction = function(path, f) {
-        path = getPath(path);
-        self.getFireBaseInstance(path).transaction(function(current_val) {
+    this.transaction = function(ref, f) {
+        ref = getPath(ref);
+        ref.transaction(function(current_val) {
             if (f) {return f(current_val);}
             return current_val;
         })
@@ -75,7 +78,7 @@ angular.module('firebaseHelper', [])
     this.authData = null;
     this.profileData = null;
     this.auth.$onAuth(function(authData) {
-        console.log("$onAuth", authData);
+        // console.log("$onAuth", authData);
         self.authData = authData;
         if (authData) {
             self.syncObject("profiles/" + self.getUID()).$loaded(
