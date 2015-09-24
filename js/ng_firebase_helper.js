@@ -87,7 +87,9 @@ angular.module('firebaseHelper', [])
                     $rootScope.$broadcast('user:login',authData);
                 },
                 function (error) {
-                    $rootScope.notifyError("Fail to get data");
+                    if ($rootScope.notifyError) {
+                        $rootScope.notifyError("Fail to get data");
+                    }
                     $state.go("login");
                 }
             )
@@ -148,11 +150,31 @@ angular.module('firebaseHelper', [])
                 if (callback.success) {callback.success(authData);}
             })
             .catch(function(error) {
-                $rootScope.notifyError("Invalid account");
+                if ($rootScope.notifyError) {
+                    $rootScope.notifyError("Invalid account");
+                }
                 self.authData = null;
                 if (callback.error) {callback.error(error);}
             });
+    }
 
+    this.updatePassword = function(password, new_password, callback) {
+        callback = callback || {};
+        self.auth.$changePassword({
+            email: self.getAuthEmail(),
+            oldPassword: password,
+            newPassword: new_password
+        }).then(function() {
+            if ($rootScope.notifySuccess) {
+                $rootScope.notifySuccess("Password changed successfully!");
+            }
+            if (callback.success) {callback.success();}
+        }).catch(function(error) {
+            if ($rootScope.notifyError) {
+                $rootScope.notifyError("Error: " + error);
+            }
+            if (callback.error) {callback.error(error);}
+        });
     }
 })
 
