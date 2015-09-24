@@ -1,0 +1,26 @@
+{
+  "name": "ng-firebase-helper",
+  "version": "0.0.1",
+  "homepage": "https://github.com/rickyngk/ng-firebase-helper",
+  "authors": [
+    "Nguyen Khanh Duy <ricky.ngk@gmail.com>"
+  ],
+  "description": "Some utility functions for angular firebase",
+  "main": "js/ng_firebase_helper.js",
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "firebase",
+    "angular",
+    "helper"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
