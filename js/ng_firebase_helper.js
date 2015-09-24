@@ -98,6 +98,13 @@ angular.module('firebaseHelper', [])
         return (this.profileData && this.profileData.role === "admin");
     }
 
+    this.getRole = function() {
+        if (this.profileData) {
+            return this.profileData.role;
+        }
+        return "";
+    }
+
     this.getUID = function() {
         if (this.authData && this.authData.uid) {
             return this.authData.uid;
