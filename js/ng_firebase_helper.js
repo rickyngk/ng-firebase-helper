@@ -194,7 +194,7 @@ angular.module('firebaseHelper', [])
     }
 
     this.pushItem = function(obj_name, owner_name, owner_key, data, two_way_binding, callback) {
-        var ref = self.getFireBaseInstance(obj_key).push();
+        var ref = self.getFireBaseInstance(obj_name).push();
         ref.set(data, function(error) {
             if (!error) {
                 var key = ref.key();
