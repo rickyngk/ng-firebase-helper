@@ -212,10 +212,10 @@ angular.module('firebaseHelper', [])
                                 }
                             })
                         } else {
-                            ref.remove();
                             if (callback && callback.success) {callback.success();}
                         }
                     } else {
+                        ref.remove();
                         if (callback && callback.error) {callback.error();}
                     }
                 });
