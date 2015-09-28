@@ -81,18 +81,16 @@ angular.module('firebaseHelper', [])
         // console.log("$onAuth", authData);
         self.authData = authData;
         if (authData) {
-            self.syncObject("profiles/" + self.getUID()).$loaded(
-                function (data) {
-                    self.profileData = data;
-                    $rootScope.$broadcast('user:login',authData);
-                },
-                function (error) {
-                    if ($rootScope.notifyError) {
-                        $rootScope.notifyError("Fail to get data");
-                    }
-                    $state.go("login");
+            self.getFireBaseInstance("profiles/" + self.getUID()).once("value", function(snapshot) {
+                self.profileData = snapshot.val();
+                $rootScope.$broadcast('user:login',authData);
+            }, function(error) {
+                console.log(error);
+                if ($rootScope.notifyError) {
+                    $rootScope.notifyError("Fail to get data");
                 }
-            )
+                $state.go("login");
+            });
         }
     });
 
@@ -150,6 +148,7 @@ angular.module('firebaseHelper', [])
                 if (callback.success) {callback.success(authData);}
             })
             .catch(function(error) {
+                console.log(error);
                 if ($rootScope.notifyError) {
                     $rootScope.notifyError("Invalid account");
                 }
@@ -167,6 +166,23 @@ angular.module('firebaseHelper', [])
         }).then(function() {
             if ($rootScope.notifySuccess) {
                 $rootScope.notifySuccess("Password changed successfully!");
+            }
+            if (callback.success) {callback.success();}
+        }).catch(function(error) {
+            if ($rootScope.notifyError) {
+                $rootScope.notifyError("Error: " + error);
+            }
+            if (callback.error) {callback.error(error);}
+        });
+    }
+
+    this.resetPassword = function(email, callback) {
+        callback = callback || {};
+        self.auth.$resetPassword({
+            email: email
+        }).then(function() {
+            if ($rootScope.notifySuccess) {
+                $rootScope.notifySuccess("Email sent. Please check (Maybe in your Updates folder)");
             }
             if (callback.success) {callback.success();}
         }).catch(function(error) {
