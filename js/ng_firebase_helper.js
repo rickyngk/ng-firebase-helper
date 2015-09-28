@@ -192,6 +192,46 @@ angular.module('firebaseHelper', [])
             if (callback.error) {callback.error(error);}
         });
     }
+
+    this.pushItem = function(obj_name, owner_name, owner_key, data, two_way_binding, callback) {
+        var ref = self.getFireBaseInstance(obj_key).push();
+        ref.set(data, function(error) {
+            if (!error) {
+                var key = ref.key();
+                var ref2 = self.getFireBaseInstance(["ref_" + owner_name + "_" + obj_name, owner_key, key]);
+                ref2.set(true, function(e2) {
+                    if (!e2) {
+                        if (two_way_binding) {
+                            self.getFireBaseInstance(["ref_" + obj_name + "_" + owner_name, key, owner_key]).set(true, function(e3) {
+                                if (!e3) {
+                                    if (callback && callback.success) {callback.success();}
+                                } else {
+                                    ref.remove();
+                                    ref2.remove();
+                                    if (callback && callback.error) {callback.error();}
+                                }
+                            })
+                        } else {
+                            ref.remove();
+                            if (callback && callback.success) {callback.success();}
+                        }
+                    } else {
+                        if (callback && callback.error) {callback.error();}
+                    }
+                });
+            } else {
+                if (callback && callback.error) {callback.error();}
+            }
+        })
+    }
+
+    this.pushItemOne = function(obj_name, owner_name, owner_key, data, callback) {
+        self.pushItem(obj_name, owner_name, owner_key, data, false, callback);
+    }
+
+    this.pushItemMany = function(obj_name, owner_name, owner_key, data, callback) {
+        self.pushItem(obj_name, owner_name, owner_key, data, true, callback);
+    }
 })
 
 
