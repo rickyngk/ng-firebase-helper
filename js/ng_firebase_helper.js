@@ -83,13 +83,16 @@ angular.module('firebaseHelper', [])
         if (authData) {
             self.getFireBaseInstance("profiles/" + self.getUID()).once("value", function(snapshot) {
                 self.profileData = snapshot.val();
-                $rootScope.$broadcast('user:login',authData);
+                if (self.profileData.confirmed) {
+                    $rootScope.$broadcast('user:login', authData);
+                } else {
+                    $rootScope.notifyError("Your account is not active yet.");
+                }
             }, function(error) {
                 console.log(error);
                 if ($rootScope.notifyError) {
                     $rootScope.notifyError("Fail to get data");
                 }
-                //$state.go("login");
             });
         }
     });
@@ -137,15 +140,13 @@ angular.module('firebaseHelper', [])
     this.logout = function() {
         self.auth.$unauth();
         self.authData = null;
-        $state.go("login");
+        $rootScope.$broadcast('user:logout');
     }
 
-    this.login = function(email, password, callback) {
-        callback = callback || {};
+    this.login = function(email, password) {
         self.auth.$authWithPassword({email: email, password: password})
             .then(function(authData) {
                 self.authData = authData;
-                if (callback.success) {callback.success(authData);}
             })
             .catch(function(error) {
                 console.log(error);
@@ -153,7 +154,6 @@ angular.module('firebaseHelper', [])
                     $rootScope.notifyError("Invalid account");
                 }
                 self.authData = null;
-                if (callback.error) {callback.error(error);}
             });
     }
 
