@@ -78,7 +78,6 @@ angular.module('firebaseHelper', [])
     this.authData = null;
     this.profileData = null;
     this.auth.$onAuth(function(authData) {
-        // console.log("$onAuth", authData);
         self.authData = authData;
         if (authData) {
             self.getFireBaseInstance("profiles/" + self.getUID()).once("value", function(snapshot) {
@@ -86,12 +85,13 @@ angular.module('firebaseHelper', [])
                 if (self.profileData.confirmed) {
                     $rootScope.$broadcast('user:login', authData);
                 } else {
+                    self.logout();
                     $rootScope.notifyError("Your account is not active yet.");
                 }
             }, function(error) {
-                console.log(error);
+                self.logout();
                 if ($rootScope.notifyError) {
-                    $rootScope.notifyError("Fail to get data");
+                    $rootScope.notifyError(error);
                 }
             });
         }
