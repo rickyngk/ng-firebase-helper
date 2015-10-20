@@ -89,7 +89,7 @@ angular.module('firebaseHelper', [])
                 if ($rootScope.notifyError) {
                     $rootScope.notifyError("Fail to get data");
                 }
-                $state.go("login");
+                //$state.go("login");
             });
         }
     });
