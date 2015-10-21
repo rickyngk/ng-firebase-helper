@@ -77,23 +77,37 @@ angular.module('firebaseHelper', [])
     this.auth = $firebaseAuth(self.getFireBaseInstance());
     this.authData = null;
     this.profileData = null;
+    this.publicProfileData = null;
+    this._isReady = false;
     this.auth.$onAuth(function(authData) {
         self.authData = authData;
         if (authData) {
-            self.getFireBaseInstance("profiles/" + self.getUID()).once("value", function(snapshot) {
+            self.getFireBaseInstance(["profiles", self.getUID()]).once("value", function(snapshot) {
                 self.profileData = snapshot.val();
-                if (self.profileData && self.profileData.confirmed && !self.profileData.ban) {
-                    $rootScope.$broadcast('user:login', authData);
-                } else {
-                    if (!self.profileData) {
-                        $rootScope.notifyError("Invalid profile data");
-                    } else if (self.profileData.ban) {
-                        $rootScope.notifyError("Your account have been banned");
+                self.getFireBaseInstance(["profiles_pub", self.getUID()]).once("value", function(snapshot) {
+                    self.publicProfileData = snapshot.val();
+                    if (self.profileData && self.profileData.confirmed && !self.profileData.ban) {
+                        self._isReady = true;
+                        $rootScope.$broadcast('user:login', authData);
+                        self.getFireBaseInstance(["profiles_pub", self.getUID()]).on("value", function(snapshot) {
+                            self.publicProfileData = snapshot.val();
+                        })
                     } else {
-                        $rootScope.notifyError("Your account is not active yet.");
+                        if (!self.profileData) {
+                            $rootScope.notifyError("Invalid profile data");
+                        } else if (self.profileData.ban) {
+                            $rootScope.notifyError("Your account have been banned");
+                        } else {
+                            $rootScope.notifyError("Your account is not active yet.");
+                        }
+                        self.logout();
                     }
+                }, function(error) {
                     self.logout();
-                }
+                    if ($rootScope.notifyError) {
+                        $rootScope.notifyError(error);
+                    }
+                });
             }, function(error) {
                 self.logout();
                 if ($rootScope.notifyError) {
@@ -122,7 +136,7 @@ angular.module('firebaseHelper', [])
     }
 
     this.hasAlreadyLogin = function() {
-        return this.authData != null;
+        return this._isReady;
     }
 
     this.getAuthEmail = function() {
@@ -144,12 +158,16 @@ angular.module('firebaseHelper', [])
     }
 
     this.logout = function() {
-        self.auth.$unauth();
-        self.authData = null;
+        this._isReady = false;
+        this.auth.$unauth();
+        this.authData = null;
+        this.publicProfileData = null;
+        this.profileData = null;
         $rootScope.$broadcast('user:logout');
     }
 
     this.login = function(email, password) {
+        this._isReady = false;
         self.auth.$authWithPassword({email: email, password: password})
             .then(function(authData) {
                 self.authData = authData;
@@ -197,6 +215,10 @@ angular.module('firebaseHelper', [])
             }
             if (callback.error) {callback.error(error);}
         });
+    }
+
+    this.getPublicProfile = function() {
+        return this.publicProfileData;
     }
 
     this.pushItem = function(obj_name, owner_name, owner_key, data, two_way_binding, callback) {
