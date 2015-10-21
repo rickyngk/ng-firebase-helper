@@ -82,11 +82,17 @@ angular.module('firebaseHelper', [])
         if (authData) {
             self.getFireBaseInstance("profiles/" + self.getUID()).once("value", function(snapshot) {
                 self.profileData = snapshot.val();
-                if (self.profileData.confirmed) {
+                if (self.profileData && self.profileData.confirmed && !self.profileData.ban) {
                     $rootScope.$broadcast('user:login', authData);
                 } else {
+                    if (!self.profileData) {
+                        $rootScope.notifyError("Invalid profile data");
+                    } else if (self.profileData.ban) {
+                        $rootScope.notifyError("Your account have been banned");
+                    } else {
+                        $rootScope.notifyError("Your account is not active yet.");
+                    }
                     self.logout();
-                    $rootScope.notifyError("Your account is not active yet.");
                 }
             }, function(error) {
                 self.logout();
