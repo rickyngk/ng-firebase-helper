@@ -136,7 +136,7 @@ angular.module('firebaseHelper', [])
     }
 
     this.hasAlreadyLogin = function() {
-        return this._isReady;
+        return this._isReady && this.getUID();
     }
 
     this.getAuthEmail = function() {
