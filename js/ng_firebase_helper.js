@@ -12,10 +12,26 @@ angular.module('firebaseHelper', [])
 
 .service('firebaseHelper', function($firebaseObject, $firebaseArray, $firebaseObject, $firebaseAuth, $rootScope, $state, notify, firebaseHelperConfig) {
     var self = this;
+    self.root = null;
 
     this.getFireBaseInstance = function(key) {
         key = getPath(key);
-        return new Firebase(key?firebaseHelperConfig + "/" + key:firebaseHelperConfig);
+        if (self.root == null) {
+            self.root = new Firebase(firebaseHelperConfig);
+        }
+        var p = self.root;
+        if (key) {
+            if (typeof("key") == "number") {
+                key = key + "";
+            }
+            if (typeof("key") == "string") {
+                key = key.split("/");
+            }
+            for (var i = 0; i < key.length; i++) {
+                p = p.child(key[i]);
+            }
+        }
+        return p;
     }
 
     this.buildPath = function(arr) {
