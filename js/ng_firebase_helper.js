@@ -97,7 +97,7 @@ angular.module('firebaseHelper', [])
     this._isReady = false;
     this.auth.$onAuth(function(authData) {
         self.authData = authData;
-        if (authData) {
+        if (authData && self.getUID()) {
             self.getFireBaseInstance(["profiles", self.getUID()]).once("value", function(snapshot) {
                 self.profileData = snapshot.val();
                 self.getFireBaseInstance(["profiles_pub", self.getUID()]).once("value", function(snapshot) {
@@ -130,6 +130,8 @@ angular.module('firebaseHelper', [])
                     $rootScope.notifyError(error);
                 }
             });
+        } else {
+            self.logout();
         }
     });
 
